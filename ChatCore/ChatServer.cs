@@ -139,18 +139,18 @@ namespace ChatCore
 
         private void Broadcast(string senderId, string message)
         {
-            byte[] sendBuffer = new byte[1024];
             var data = $"{m_userNames[senderId]}:{message}";
             var buffer = System.Text.Encoding.ASCII.GetBytes(data);
             var lengthBuffer = BitConverter.GetBytes(buffer.Length);
+
+            var totalLength = lengthBuffer.Length + buffer.Length;
+            byte[] sendBuffer = new byte[totalLength];
 
             int position = 0;
             Array.Copy(lengthBuffer, 0, sendBuffer, position, lengthBuffer.Length);
             position += lengthBuffer.Length;
 
             Array.Copy(buffer, 0, sendBuffer, position, buffer.Length);
-            position += buffer.Length;
-
 
             foreach (var clientId in m_clients.Keys)
             {

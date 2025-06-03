@@ -80,10 +80,10 @@ namespace ChatCore
                 }
                 position += 4;
 
-                var request = System.Text.Encoding.ASCII.GetString(buffer).Substring(position, length);
-                var tokens = request.Split(':');
-                var sender = tokens[0];
-                var message = tokens[1];
+                var request = System.Text.Encoding.ASCII.GetString(buffer, position, length);
+                var separatorIndex = request.IndexOf(':');
+                string sender = separatorIndex >= 0 ? request.Substring(0, separatorIndex) : "";
+                string message = separatorIndex >= 0 ? request.Substring(separatorIndex + 1) : request;
                 m_messageList.Add(new KeyValuePair<string, string>(sender, message));
 
                 position += length;
@@ -104,9 +104,11 @@ namespace ChatCore
 
         private void SendData(string data)
         {
-            byte[] sendBuffer = new byte[1024];
             var requestBuffer = System.Text.Encoding.ASCII.GetBytes(data);
             var lengthBuffer = BitConverter.GetBytes(requestBuffer.Length);
+
+            var totalLength = messageType.Length + lengthBuffer.Length + requestBuffer.Length;
+            byte[] sendBuffer = new byte[totalLength];
 
             int position = 0;
             Array.Copy(messageType, 0, sendBuffer, position, messageType.Length);
